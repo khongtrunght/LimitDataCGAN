@@ -1,0 +1,19 @@
+model_params:
+  name: 'CGAN'
+  img_shape: !!python/tuple [3, 224, 224]
+  embedd_dim: 50
+  latent_dim: 100
+  batch_size: 64
+  learning_rate: 0.0002
+  num_classes: 3
+
+trainer_params:
+  gpus: 1
+  max_epochs: 9
+  log_every_n_steps: 30
+  #fast_dev_run: True
+
+logging_params:
+  save_dir: "lightning_logs/"
+  name: "CGAN"
+  manual_seed: 1265
