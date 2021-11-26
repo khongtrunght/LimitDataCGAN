@@ -13,15 +13,15 @@ import torchvision.transforms as transforms
 import yaml
 from pytorch_lightning import loggers
 from pytorch_lightning.loggers import TensorBoardLogger
-from torchsummary import summary
 from torchvision import datasets
+# from pl_bolts.datamodules import MNISTDataModule
 
 parser = ArgumentParser()
 parser.add_argument('--config', '-c',
                     dest='filename',
                     metavar='FILE',
                     help='path to configuration file',
-                    default='configs/cgan.yaml')
+                    default='configs/gp-cgan-best.yaml')
 
 args = parser.parse_args()
 with open(args.filename, 'r') as f:
@@ -42,7 +42,8 @@ np.random.seed(config['logging_params']['manual_seed'])
 if __name__ == "__main__":
     model = gan_models[config['model_params']
                        ['name']](**config['model_params'])
-    dm = MNISTDataModule()
+    dm = MNISTDataModule(
+        **config['data_model_params'],)
     trainer = pl.Trainer(logger=logger, **config['trainer_params'])
     print(f"======= Training {config['model_params']['name']} ======")
     trainer.fit(model, dm)

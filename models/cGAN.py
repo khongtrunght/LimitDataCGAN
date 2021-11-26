@@ -1,4 +1,3 @@
-from torchsummary import summary
 from typing import OrderedDict
 import numpy as np
 from pytorch_lightning import loggers
@@ -11,11 +10,8 @@ import torchvision.transforms as transforms
 import pytorch_lightning as pl
 import torch.nn as nn
 import torch.nn.functional as F
-from pytorch_lightning.loggers import TensorBoardLogger
 
-from argparse import ArgumentParser
 
-import yaml
 
 EMBEDDING_SIZE = 64
 
@@ -49,7 +45,7 @@ class Discriminator(nn.Module):
 
     def forward(self, x, y):
         image = x.view(-1, *self.img_shape)
-        embedding = self.embedding_layer(y).view(-1,1, *self.img_shape[1:])
+        embedding = self.embedding_layer(y).view(-1, 1, *self.img_shape[1:])
         input = torch.cat((image, embedding), 1)
         output = self.model(input)
         return output  # probability of real
@@ -65,8 +61,7 @@ class Generator(nn.Module):
 
         self.embedding_layer = nn.Sequential(
             self.embedding,
-            nn.Linear(embedd_dim, 56*56),
-        )
+            nn.Linear(embedd_dim, int(np.prod(img_shape[1:]) / 16)))
 
         def block(in_channel, out_channel, normalize=True):
             layers = [nn.ConvTranspose2d(in_channel, out_channel,
@@ -84,12 +79,15 @@ class Generator(nn.Module):
             nn.Tanh(),
         )
 
-        self.to_shape = nn.Linear(latent_dim, int(np.prod(self.img_shape[1:])*128 / 16))
+        self.to_shape = nn.Linear(latent_dim, int(
+            np.prod(self.img_shape[1:])*128 / 16))
 
     def forward(self, z, y):
         y = y.long()
-        latent = self.embedding_layer(y).view(-1, 1, int(self.img_shape[1]/4), int(self.img_shape[1]/4))
-        z = self.to_shape(z).view(-1, 128, int(self.img_shape[1]/4), int(self.img_shape[1]/4))
+        latent = self.embedding_layer(
+            y).view(-1, 1, int(self.img_shape[1]/4), int(self.img_shape[1]/4))
+        z = self.to_shape(
+            z).view(-1, 128, int(self.img_shape[1]/4), int(self.img_shape[1]/4))
         input = torch.cat((z, latent), 1)
         output = self.model(input).view(-1, *self.img_shape)
         return output
@@ -135,7 +133,8 @@ class CGAN(pl.LightningModule):
         z = torch.randn(imgs.shape[0], self.latent_dim)
         z = z.type_as(imgs)  # dua z ve cung device
         # random label cho z
-        z_labels = torch.randint(0, self.num_classes, (imgs.shape[0], 1)).to(self.device)
+        z_labels = torch.randint(
+            0, self.num_classes, (imgs.shape[0], 1)).to(self.device)
 
         # imgs = imgs*2 - 1
 

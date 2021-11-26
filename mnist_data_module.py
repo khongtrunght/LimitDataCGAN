@@ -7,8 +7,8 @@ from torchvision import datasets
 import os
 
 PATH_DATASETS = "data/afhq"
-BATCH_SIZE = 64
-NUM_WORKERS = int(os.cpu_count() / 4)
+BATCH_SIZE = 32
+NUM_WORKERS = int(os.cpu_count() / 2)
 
 
 class MNISTDataModule(LightningDataModule):
@@ -25,9 +25,10 @@ class MNISTDataModule(LightningDataModule):
 
         self.transform = transforms.Compose(
             [
-                transforms.Resize(224),
+                transforms.Resize(64),
                 transforms.ToTensor(),
-
+                transforms.Normalize([0.485, 0.456, 0.406], [
+                                     0.229, 0.224, 0.225])
             ]
         )
         #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
@@ -35,7 +36,7 @@ class MNISTDataModule(LightningDataModule):
         # self.dims is returned when you call dm.size()
         # Setting default dims here because we know them.
         # Could optionally be assigned dynamically in dm.setup()
-        self.dims = (3, 224, 224)
+        self.dims = (3, 64, 64)
         self.num_classes = 3
 
     def prepare_data(self):
@@ -43,13 +44,14 @@ class MNISTDataModule(LightningDataModule):
         # MNIST(self.data_dir, train=True, download=True)
         # MNIST(self.data_dir, train=False, download=True)
         for dirname, _, filenames in os.walk(self.data_dir):
-          for filename in filenames:
-              self.path, self.folder = os.path.split(dirname)
+            for filename in filenames:
+                self.path, self.folder = os.path.split(dirname)
 
     def setup(self, stage=None):
         # Assign train/val datasets for use in dataloaders
         if stage == "fit" or stage is None:
-            data_full = datasets.ImageFolder(self.path, transform=self.transform)
+            data_full = datasets.ImageFolder(
+                self.path, transform=self.transform)
             self.data_train, self.data_val = random_split(
                 data_full, [2750, len(data_full) - 2750])
 

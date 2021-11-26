@@ -1,0 +1,27 @@
+model_params:
+  name: 'GP-CGAN-best'
+  img_size: 64
+  channels_img : 3
+  embedding_size: 50
+  channels_noise: 100
+  learning_rate: 0.0001
+  num_classes: 3
+  num_df : 32
+  num_gf : 32
+  n_critic: 5
+  labda_gp : 10
+
+data_model_params:
+  batch_size: 32
+  
+
+trainer_params:
+  gpus: 1
+  max_epochs: 100
+  log_every_n_steps: 20
+  # fast_dev_run: True
+
+logging_params:
+  save_dir: "lightning_logs/"
+  name: "GP-CGAN-best"
+  manual_seed: 1265
