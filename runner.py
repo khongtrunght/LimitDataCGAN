@@ -42,6 +42,8 @@ np.random.seed(config['logging_params']['manual_seed'])
 if __name__ == "__main__":
     model = gan_models[config['model_params']
                        ['name']](**config['model_params'])
+    chk_path = "lightning_logs/GP-CGAN-best/version_3/checkpoints/epoch=63-step=3007.ckpt"
+    model = model.load_from_checkpoint(chk_path, **config['model_params'])
     dm = MNISTDataModule(
         **config['data_model_params'],)
     trainer = pl.Trainer(logger=logger, **config['trainer_params'])
