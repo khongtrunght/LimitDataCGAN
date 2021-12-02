@@ -1,4 +1,3 @@
-data
 MNIST
 lightning_logs
 .vscode

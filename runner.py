@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from mnist_data_module import MNISTDataModule
+from animal_face_datamodule import AnimalFaceDataModule
 from models import *
 
 import matplotlib.pyplot as plt
@@ -14,14 +14,14 @@ import yaml
 from pytorch_lightning import loggers
 from pytorch_lightning.loggers import TensorBoardLogger
 from torchvision import datasets
-# from pl_bolts.datamodules import MNISTDataModule
+from mnist_datamodule import MNISTDataModule
 
 parser = ArgumentParser()
 parser.add_argument('--config', '-c',
                     dest='filename',
                     metavar='FILE',
                     help='path to configuration file',
-                    default='configs/gp-cgan-best.yaml')
+                    default='configs/dcgan.yaml')
 
 args = parser.parse_args()
 with open(args.filename, 'r') as f:
@@ -42,9 +42,9 @@ np.random.seed(config['logging_params']['manual_seed'])
 if __name__ == "__main__":
     model = gan_models[config['model_params']
                        ['name']](**config['model_params'])
-    chk_path = "lightning_logs/GP-CGAN-best/version_3/checkpoints/epoch=63-step=3007.ckpt"
-    model = model.load_from_checkpoint(chk_path, **config['model_params'])
-    dm = MNISTDataModule(
+    # chk_path = "lightning_logs/GP-CGAN-best/version_3/checkpoints/epoch=63-step=3007.ckpt"
+    # model = model.load_from_checkpoint(chk_path, **config['model_params'])
+    dm = AnimalFaceDataModule(
         **config['data_model_params'],)
     trainer = pl.Trainer(logger=logger, **config['trainer_params'])
     print(f"======= Training {config['model_params']['name']} ======")

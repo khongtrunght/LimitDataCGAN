@@ -1,15 +1,20 @@
 model_params:
   name: 'CGAN'
-  img_shape: !!python/tuple [3, 28, 28]
+  img_shape: !!python/tuple [1, 28, 28]
   embedd_dim: 50
   latent_dim: 100
-  batch_size: 32
+  batch_size: 256
   learning_rate: 0.0002
-  num_classes: 3
+  num_classes: 10
+
+
+data_model_params:
+  batch_size: 256
+  img_size: 28
 
 trainer_params:
   gpus: 1
-  max_epochs: 100
+  max_epochs: 20
   log_every_n_steps: 30
   #fast_dev_run: True
 

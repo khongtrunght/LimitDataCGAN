@@ -1,6 +1,6 @@
 model_params:
   name: 'GP-CGAN-best'
-  img_size: 64
+  img_size: 32
   channels_img : 3
   embedding_size: 50
   channels_noise: 100
@@ -17,7 +17,7 @@ data_model_params:
 
 trainer_params:
   gpus: 1
-  max_epochs: 100
+  max_epochs: 30
   log_every_n_steps: 20
   # fast_dev_run: True
 
