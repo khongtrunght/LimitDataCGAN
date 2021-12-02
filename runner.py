@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from animal_face_datamodule import AnimalFaceDataModule
+from data_models.animal_face_datamodule import AnimalFaceDataModule
 from models import *
 
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ import yaml
 from pytorch_lightning import loggers
 from pytorch_lightning.loggers import TensorBoardLogger
 from torchvision import datasets
-from mnist_datamodule import MNISTDataModule
+from data_models.mnist_datamodule import MNISTDataModule
 
 parser = ArgumentParser()
 parser.add_argument('--config', '-c',

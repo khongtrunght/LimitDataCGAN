@@ -4,3 +4,6 @@ lightning_logs
 .ipyb_checkpoints
 .idea
 __pycache__
+out_cifar
+out_animals
+data

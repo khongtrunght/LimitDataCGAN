@@ -61,7 +61,6 @@ class AnimalFaceDataModule(LightningDataModule):
                 self.data_dir + "/val", transform=self.transform)
 
     def train_dataloader(self):
-        print("train size: ", len(self.data_train))
         return DataLoader(
             self.data_train,
             batch_size=self.batch_size,
