@@ -15,6 +15,7 @@ from pytorch_lightning import loggers
 from pytorch_lightning.loggers import TensorBoardLogger
 from torchvision import datasets
 from data_models.mnist_datamodule import MNISTDataModule
+from utils.utils import model_init
 
 parser = ArgumentParser()
 parser.add_argument('--config', '-c',
@@ -48,4 +49,10 @@ if __name__ == "__main__":
         **config['data_model_params'],)
     trainer = pl.Trainer(logger=logger, **config['trainer_params'])
     print(f"======= Training {config['model_params']['name']} ======")
+    # torch.save(model.state_dict(), "model.pth")
+
+    preD = torch.load("pretrains/netD_epoch_199.pth")
+    preG = torch.load("pretrains/netG_epoch_199.pth")
+
+    model = model_init(model, preG, preD)
     trainer.fit(model, dm)

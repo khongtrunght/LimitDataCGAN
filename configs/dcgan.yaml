@@ -6,15 +6,15 @@ model_params:
   channels_noise: 100
   learning_rate: 0.0001
   num_classes: 3
-  num_df : 32
-  num_gf : 32
+  num_df : 64
+  num_gf : 64
   n_critic: 5
   labda_gp : 10
 
 data_model_params:
-  batch_size: 32
+  batch_size: 128
   img_size: 64
-  data_size: 3000
+  data_size: 10000
   
 
 trainer_params:
