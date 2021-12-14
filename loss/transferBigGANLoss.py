@@ -8,12 +8,12 @@ from .Vgg16PerceptualLoss import Vgg16PerceptualLoss
 
 class TransferBigGANLoss(nn.Module):
     def __init__(self, perceptual_loss="vgg",
-                 scale_per=0.001,
-                 scale_emd=0.1,
-                 scale_reg=0.02,
-                 normalize_img=True,
-                 normalize_per=False,
-                 dist_per="l1",
+                 perceptural=0.001,
+                 earth_mover=0.1,
+                 regulization=0.02,
+                 norm_img=True,
+                 norm_perceptural=False,
+                 dis_perceptural="l1",
                  ):
         '''
         perceptual_loss: preceptural loss
@@ -21,14 +21,15 @@ class TransferBigGANLoss(nn.Module):
         '''
         super(TransferBigGANLoss, self).__init__()
         if perceptual_loss == "vgg":
-            self.perceptual_loss = Vgg16PerceptualLoss(loss_func=dist_per)
+            self.perceptual_loss = Vgg16PerceptualLoss(
+                loss_func=dis_perceptural)
         else:
             self.perceptual_loss = perceptual_loss
-        self.scale_per = scale_per
-        self.scale_emd = scale_emd
-        self.scale_reg = scale_reg
-        self.normalize_img = normalize_img
-        self.normalize_perceptural = normalize_per
+        self.scale_per = perceptural
+        self.scale_emd = earth_mover
+        self.scale_reg = regulization
+        self.normalize_img = norm_img
+        self.normalize_perceptural = norm_perceptural
 
     def earth_mover_dist(self, z):
         """
