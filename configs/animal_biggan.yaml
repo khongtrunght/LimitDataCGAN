@@ -1,0 +1,49 @@
+model_params:
+  name: 'TransferBigGAN'
+#learning rate
+  lr:
+    linear_gen: 0.0000001
+    linear_batch_stat: 0.0005
+    embed : 0.05
+    scale_shift: 0.0005
+    class_conditional_embed: 0.001
+#loss
+  loss:
+    perceptural: 0.1
+    earth_mover: 0.1
+    regulization: 0.02
+    norm_img : True
+    norm_perceptural: True
+    dis_perceptural: "l2"
+
+  decay:
+    step : 3000 # giam learning rate sau moi <step> iter
+    step_factor: 0.1
+
+  iteration:
+    num_iter: 10000
+    num_workers: 4
+
+
+
+data_model_params:
+  name: 'animal'
+  batch_size: 25
+  img_size: 128
+  data_size: 100
+   
+
+
+
+trainer_params:
+  gpus: 1
+  max_epochs: 100
+  log_every_n_steps: 20
+
+
+
+
+logging_params:
+  save_dir: "lightning_logs/"
+  name: 'TransferBigGAN'
+  manual_seed: 1265
