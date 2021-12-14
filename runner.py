@@ -1,6 +1,6 @@
 from pytorch_lightning import Trainer
 from pytorch_lightning import callbacks
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, ModelSummary
 import yaml
 from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
@@ -14,13 +14,13 @@ from models import *
 import models.BigGAN as biggan
 
 
-def setup_model(name, dataset_size, config_model, resume=None, biggan_pretrain_path='./data/G_ema.pth'):
+def setup_model(name, data_size, config_model, resume=None, biggan_pretrain_path='./data/G_ema.pth'):
     if name == 'TransferBigGAN':
         generator = biggan.Generator(**bigagn128config)
         generator.load_state_dict(torch.load(
             biggan_pretrain_path, map_location=lambda storage, loc: storage))
         model = tranfer_models[config_model
-                               ['name']](generator=generator, **config_model)
+                               ['name']](generator=generator, data_size=data_size, **config_model)
         return model
 
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     np.random.seed(config['logging_params']['manual_seed'])
 
     model = setup_model(config['model_params']['name'],
-                        config['data_model_params']['dataset_size'], config['model_params'], args.resume)
+                        config['data_model_params']['data_size'], config['model_params'], args.resume)
     dataset = AnimalFaceDataModule(
         **config['data_model_params'],)
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         filename='transfer-biggan-{epoch:03d}'
     )
 
-    trainer = Trainer(callbacks=[checkpoint_callback],
+    trainer = Trainer(callbacks=[checkpoint_callback, ModelSummary(max_depth=2)],
                       logger=logger, **config['trainer_params'])
 
     trainer.fit(model, dataset)
