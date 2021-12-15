@@ -17,7 +17,6 @@ def setup_dataloader(name, h=128, w=128, batch_size=4, num_workers=4, data_size=
         for label in labels_dict.keys():
             img_path_dict[label] = glob.glob(f"data/afhq/train/{label}/*.jpg")
             img_path_dict[label] = img_path_dict[label][:data_size]
-            print(img_path_dict[label][0])
     else:
         raise NotImplementedError("Unknown dataset %s" % name)
 
