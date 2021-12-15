@@ -76,12 +76,12 @@ class ImageListDataset(Dataset):
         label = self.get_label(i)
         if self.target_transform is not None:
             if isinstance(self.target_transform, dict):
-                label_idx = self.target_transform[label]
+                indice_label = self.target_transform[label]
             else:
-                label_idx = self.target_transform(label)
+                indice_label = self.target_transform(label)
         else:
-            label_idx = int(label)
-        return label_idx
+            indice_label = label
+        return indice_label
 
     def __len__(self):
         return len(self.data)

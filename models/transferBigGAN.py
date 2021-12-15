@@ -42,12 +42,11 @@ class TransferBigGAN(pl.LightningModule):
         self.scale = nn.Parameter(torch.ones(in_channels,))
         self.shift = nn.Parameter(torch.zeros(in_channels,))
 
-        self.linear = nn.Linear(1, shared_embedding_size, bias=False)
         init_weight = generator.shared.weight.mean(
             dim=0, keepdim=True).transpose(1, 0)
-        self.linear.weight.data = init_weight
 
-        # self.shared = nn.Embedding(n_classes, self.shared_embedding_size)
+        self.class_embeddings = nn.Embedding(
+            n_classes, self.shared_embedding_size)
         del generator.shared
 
         # self.losses de luu lai loss trong qua trinh tinh toan
@@ -61,14 +60,13 @@ class TransferBigGAN(pl.LightningModule):
         )
 
         self.lr_args = kwargs.get("lr")
+    # y là vector da di qua embeding
 
-    def forward(self, z):  # y
+    def forward(self, z, y):  # y
         '''
         z: shape (batch_size, chuabiet)
-        y: shape (batch_size, 1)
+        y: shape (batch_size, shared_embedding_size)
         '''
-        y = torch.ones((z.shape[0], 1), device=self.device)
-        y = self.linear(y)
 
         # tach z thanh nhieu phan va dung z khac nhau moi layer
         if self.generator.hier:
@@ -208,17 +206,22 @@ class TransferBigGAN(pl.LightningModule):
         self.eval()
         # phai de eval) vi muon giu nguyen batchnorm mean va var
         # van tune batchnorm scale and shift
-        img, indices = train_batch
+
+        # dataset se co 2 label : indices va labels
+        img, labels = train_batch
+        indices = labels[0]
+        real_label = labels[1]
 
         # to do scheduler step
 
         embeddings = self.embeddings(indices)
         embeddings_eps = torch.randn(
             embeddings.size(), device=self.device) * 0.01
-
         embeddings = embeddings + embeddings_eps
 
-        img_gen = self(embeddings)
+        real_label_embeddings = self.class_embeddings(real_label)
+
+        img_gen = self(embeddings, real_label_embeddings)
         loss = self.criterion(img_gen, img, embeddings, self.linear.weight)
 
         if self.global_step % 50 == 0:
