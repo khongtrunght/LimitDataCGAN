@@ -2,13 +2,22 @@ import torch
 import pytorch_lightning as pl
 import torch.nn as nn
 from loss.transferBigGANLoss import TransferBigGANLoss
-from visualize import random
+from visualizers import random
 import torch.optim as optim
 from torch.optim import lr_scheduler
+from pytorch_lightning.callbacks import BaseFinetuning
+
+
+class GeneratorFreeze(BaseFinetuning):
+    def __init__(self):
+        super().__init__()
+
+    def freeze_before_training(self, pl_module):
+        self.freeze(pl_module.generator, train_bn=True)
 
 
 class TransferBigGAN(pl.LightningModule):
-    def __init__(self, generator, data_size, n_classes, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="zero", **kwargs):
+    def __init__(self, generator, data_size, n_classes=3, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="zero", **kwargs):
         '''
         generator: pretrained generator
         data_size: number of training images, tac gia de nghi nen duoi 100
@@ -45,11 +54,11 @@ class TransferBigGAN(pl.LightningModule):
         # to_do: set training params
         self.set_training_params()
 
-        self.criterion = TransferBigGANLoss(
-            **kwargs.get("loss")
-        )
+        # self.criterion = TransferBigGANLoss(
+        #     **kwargs.get("loss")
+        # )
 
-        self.lr_args = kwargs.get("lr")
+        # self.lr_args = kwargs.get("lr")
 
     def forward(self, z):  # y
         '''
@@ -99,6 +108,10 @@ class TransferBigGAN(pl.LightningModule):
         # embedding cua class conditional
         params_requires_grad.update(self.class_conditional_embeddings_params())
         # embeding
+        params_requires_grad.update(self.embeddings_params())
+
+        for name, param in params_requires_grad.items():
+            param.requires_grad = True
 
     def after_first_linear_params(self):
         return {"scale": self.scale, "shift": self.shift}
