@@ -123,7 +123,7 @@ class TransferBigGAN(pl.LightningModule):
                 "generator.linear.bias": self.generator.linear.bias}
 
     def class_conditional_embeddings_params(self):
-        return {"linear.weight": self.linear.weight}
+        return {"class_embeddings.weight": self.class_embeddings.weight}
 
     def embeddings_params(self):
         return {"embeddings.weight": self.embeddings.weight}
