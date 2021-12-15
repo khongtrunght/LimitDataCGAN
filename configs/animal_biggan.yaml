@@ -31,7 +31,7 @@ data_model_params:
   #name: 'animal'
   batch_size: 25
   img_size: 128
-  data_size: 100
+  data_size: 45
    
 
 
