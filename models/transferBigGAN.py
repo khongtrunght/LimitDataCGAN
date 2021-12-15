@@ -34,7 +34,8 @@ class TransferBigGAN(pl.LightningModule):
 
         self.embeddings = nn.Embedding(data_size, embedding_size)
         if embedding_init == "zero":
-            self.embeddings.weight.data.zero_()
+            self.embeddings.from_pretrained(torch.zeros(
+                data_size, embedding_size), freeze=False)
 
         in_channels = self.generator.blocks[0][0].conv1.in_channels
 
@@ -46,7 +47,8 @@ class TransferBigGAN(pl.LightningModule):
             dim=0, keepdim=True).transpose(1, 0)
         self.linear.weight.data = init_weight
 
-        self.shared = nn.Embedding(n_classes, self.shared_embedding_size)
+        # self.shared = nn.Embedding(n_classes, self.shared_embedding_size)
+        del generator.shared
 
         # self.losses de luu lai loss trong qua trinh tinh toan
         # self.losses = ...
@@ -54,11 +56,11 @@ class TransferBigGAN(pl.LightningModule):
         # to_do: set training params
         self.set_training_params()
 
-        # self.criterion = TransferBigGANLoss(
-        #     **kwargs.get("loss")
-        # )
+        self.criterion = TransferBigGANLoss(
+            **kwargs.get("loss")
+        )
 
-        # self.lr_args = kwargs.get("lr")
+        self.lr_args = kwargs.get("lr")
 
     def forward(self, z):  # y
         '''
@@ -109,6 +111,8 @@ class TransferBigGAN(pl.LightningModule):
         params_requires_grad.update(self.class_conditional_embeddings_params())
         # embeding
         params_requires_grad.update(self.embeddings_params())
+        # batch stat
+        params_requires_grad.update(self.batch_stat_generator_params())
 
         for name, param in params_requires_grad.items():
             param.requires_grad = True
@@ -200,6 +204,7 @@ class TransferBigGAN(pl.LightningModule):
         return [optimizer], [lr_scheduler_config]
 
     def training_step(self, train_batch, batch_idx):
+
         self.eval()
         # phai de eval) vi muon giu nguyen batchnorm mean va var
         # van tune batchnorm scale and shift
@@ -208,7 +213,8 @@ class TransferBigGAN(pl.LightningModule):
         # to do scheduler step
 
         embeddings = self.embeddings(indices)
-        embeddings_eps = torch.randn(embeddings.size(), device=self.device)
+        embeddings_eps = torch.randn(
+            embeddings.size(), device=self.device) * 0.01
 
         embeddings = embeddings + embeddings_eps
 
@@ -220,5 +226,6 @@ class TransferBigGAN(pl.LightningModule):
         return {"loss": loss}
 
     def training_epoch_end(self, outputs):
-        super().training_epoch_end(outputs)
-        random(self, 'samples', truncate=True)
+        if self.global_step % 500 == 0:
+            super().training_epoch_end(outputs)
+            random(self, f'samples_{self.global_step}.jpg', truncate=True)

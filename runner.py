@@ -15,33 +15,33 @@ import models.BigGAN as biggan
 from models.transferBigGAN import GeneratorFreeze
 
 
-# def setup_model(name, data_size, config_model, resume=None, biggan_pretrain_path='./data/G_ema.pth'):
-#     if name == 'TransferBigGAN':
-#         generator = biggan.Generator(**bigagn128config)
-#         generator.load_state_dict(torch.load(
-#             biggan_pretrain_path, map_location=lambda storage, loc: storage))
-#         model = tranfer_models[config_model
-#                                ['name']](generator=generator, data_size=data_size, **config_model)
-#         return model
+def setup_model(name, data_size, config_model, resume=None, biggan_pretrain_path='./data/G_ema.pth'):
+    if name == 'TransferBigGAN':
+        generator = biggan.Generator(**bigagn128config)
+        generator.load_state_dict(torch.load(
+            biggan_pretrain_path, map_location=lambda storage, loc: storage))
+        model = tranfer_models[config_model
+                               ['name']](generator=generator, data_size=data_size, **config_model)
+        return model
 
 
-def setup_model(name, data_size, resume=None, biggan_pretrain_path="./data/G_ema.pth"):
-    print("model name:", name)
-    if name == "TransferBigGAN":
-        G = biggan.Generator(**bigagn128config)
-        G.load_state_dict(torch.load(biggan_pretrain_path,
-                          map_location=lambda storage, loc: storage))
-        model = TransferBigGAN(G, data_size=data_size)
-    else:
-        print("%s (model name) is not defined" % name)
-        raise NotImplementedError()
+# def setup_model(name, data_size, resume=None, biggan_pretrain_path="./data/G_ema.pth"):
+#     print("model name:", name)
+#     if name == "TransferBigGAN":
+#         G = biggan.Generator(**bigagn128config)
+#         G.load_state_dict(torch.load(biggan_pretrain_path,
+#                           map_location=lambda storage, loc: storage))
+#         model = TransferBigGAN(G, data_size=data_size)
+#     else:
+#         print("%s (model name) is not defined" % name)
+#         raise NotImplementedError()
 
-    if resume is not None:
-        print("resuming trained weights from %s" % resume)
-        checkpoint_dict = torch.load(resume)
-        model.load_state_dict(checkpoint_dict["model"])
+#     if resume is not None:
+#         print("resuming trained weights from %s" % resume)
+#         checkpoint_dict = torch.load(resume)
+#         model.load_state_dict(checkpoint_dict["model"])
 
-    return model
+#     return model
 
 
 if __name__ == '__main__':
