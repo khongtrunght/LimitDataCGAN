@@ -78,7 +78,8 @@ if __name__ == '__main__':
 
     checkpoint_callback = ModelCheckpoint(
         dirpath='checkpoints/',
-        filename='transfer-biggan-{epoch:03d}'
+        filename='transfer-biggan-{epoch:03d}',
+        every_n_epochs=100
     )
 
     trainer = Trainer(callbacks=[checkpoint_callback, ModelSummary(max_depth=2)],  # , GeneratorFreeze()
