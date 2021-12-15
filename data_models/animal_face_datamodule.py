@@ -41,25 +41,6 @@ class AnimalFaceDataModule(LightningDataModule):
         self.num_classes = 3
         self.data_size = data_size
 
-    def prepare_data(self):
-        # download
-        # MNIST(self.data_dir, train=True, download=True)
-        # MNIST(self.data_dir, train=False, download=True)
-        self.train_path = self.data_dir + "/train"
-        self.val_path = self.data_dir + "/val"
-
-    def setup(self, stage=None):
-        # Assign train/val datasets for use in dataloaders
-        if stage == "fit" or stage is None:
-            self.data_train = datasets.ImageFolder(
-                self.train_path, transform=self.transform)
-            self.data_train = Subset(self.data_train, range(self.data_size))
-
-        # Assign test dataset for use in dataloader(s)
-        if stage == "test" or stage is None:
-            self.data_test = datasets.ImageFolder(
-                self.data_dir + "/val", transform=self.transform)
-
     def train_dataloader(self):
         # return DataLoader(
         #     self.data_train,
@@ -67,7 +48,7 @@ class AnimalFaceDataModule(LightningDataModule):
         #     num_workers=self.num_workers,
         #     shuffle=True,
         # )
-        return setup_dataloader("animal", batch_size=self.batch_size, num_workers=self.num_workers)
+        return setup_dataloader("animal", batch_size=self.batch_size, num_workers=self.num_workers, data_size=self.data_size//3)
 
     # def val_dataloader(self):
     #     return DataLoader(self.data_val, batch_size=self.batch_size, num_workers=self.num_workers)
