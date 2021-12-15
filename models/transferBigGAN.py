@@ -222,7 +222,8 @@ class TransferBigGAN(pl.LightningModule):
         real_label_embeddings = self.class_embeddings(real_label)
 
         img_gen = self(embeddings, real_label_embeddings)
-        loss = self.criterion(img_gen, img, embeddings, self.linear.weight)
+        loss = self.criterion(img_gen, img, embeddings,
+                              self.class_embeddings.weight)
 
         if self.global_step % 50 == 0:
             random(self, f'samples_{self.global_step}.jpg', truncate=True)
