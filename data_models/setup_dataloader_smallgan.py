@@ -29,4 +29,4 @@ def setup_dataloader(name, h=128, w=128, batch_size=4, num_workers=4):
     dataset = ImageListDataset(img_path_list, transform=transform)
 
     return DataLoader([data for data in dataset], batch_size=batch_size,
-                      shuffle=True, num_workers=num_workers)
+                      shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
