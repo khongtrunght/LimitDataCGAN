@@ -143,7 +143,7 @@ def main(args):
                                            )
 
     criterion = TransferBigGANLoss(
-        perceptual_loss=args.loss_per,
+        perceptural=args.loss_per,
         earth_mover=args.loss_emd,
         regulization=args.loss_re,
         norm_img=args.loss_norm_img,
