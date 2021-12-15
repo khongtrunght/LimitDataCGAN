@@ -221,11 +221,16 @@ class TransferBigGAN(pl.LightningModule):
         img_gen = self(embeddings)
         loss = self.criterion(img_gen, img, embeddings, self.linear.weight)
 
+        
+        if self.global_step % 500 == 0:
+            super().training_epoch_end(outputs)
+            random(self, f'samples_{self.global_step}.jpg', truncate=True)
+
         # todo : self.losses.update(loss.item(), img.size(0))
 
         return {"loss": loss}
 
-    def training_epoch_end(self, outputs):
-        if self.global_step % 500 == 0:
-            super().training_epoch_end(outputs)
-            random(self, f'samples_{self.global_step}.jpg', truncate=True)
+    # def training_epoch_end(self, outputs):
+    #     if self.global_step % 500 == 0:
+    #         super().training_epoch_end(outputs)
+    #         random(self, f'samples_{self.global_step}.jpg', truncate=True)
