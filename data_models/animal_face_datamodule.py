@@ -6,6 +6,8 @@ from torchvision.datasets import MNIST
 from torchvision import datasets
 import os
 
+from .setup_dataloader_smallgan import setup_dataloader
+
 PATH_DATASETS = "data/afhq"
 BATCH_SIZE = 32
 NUM_WORKERS = int(os.cpu_count() / 2)
@@ -59,15 +61,16 @@ class AnimalFaceDataModule(LightningDataModule):
                 self.data_dir + "/val", transform=self.transform)
 
     def train_dataloader(self):
-        return DataLoader(
-            self.data_train,
-            batch_size=self.batch_size,
-            num_workers=self.num_workers,
-            shuffle=True,
-        )
+        # return DataLoader(
+        #     self.data_train,
+        #     batch_size=self.batch_size,
+        #     num_workers=self.num_workers,
+        #     shuffle=True,
+        # )
+        return setup_dataloader("animal", batch_size=self.batch_size, num_workers=self.num_workers)
 
     # def val_dataloader(self):
     #     return DataLoader(self.data_val, batch_size=self.batch_size, num_workers=self.num_workers)
 
-    def test_dataloader(self):
-        return DataLoader(self.data_test, batch_size=self.batch_size, num_workers=self.num_workers)
+    # def test_dataloader(self):
+    #    return DataLoader(self.data_test, batch_size=self.batch_size, num_workers=self.num_workers)
