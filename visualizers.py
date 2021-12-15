@@ -65,7 +65,7 @@ def random(model, out_path, tmp=0.4, n=9, truncate=False):
         labels = [0, 0, 0, 1, 1, 1, 2, 2, 2]
         labels = torch.tensor(labels, device=device)
 
-        label_embeddings = model.class_embedding(labels)
+        label_embeddings = model.class_embeddings(labels)
 
         image_tensors = model(embeddings, label_embeddings)
 
