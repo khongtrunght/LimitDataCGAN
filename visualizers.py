@@ -61,7 +61,14 @@ def random(model, out_path, tmp=0.4, n=9, truncate=False):
                 0, tmp, size=(n, dim_z)).astype("float32")
         embeddings = torch.tensor(embeddings, device=device)
         batch_size = embeddings.size()[0]
-        image_tensors = model(embeddings)
+
+        labels = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+        labels = torch.tensor(labels, device=device)
+
+        label_embeddings = model.class_embedding(labels)
+
+        image_tensors = model(embeddings, label_embeddings)
+
         torchvision.utils.save_image(
             image_tensors,
             out_path,
