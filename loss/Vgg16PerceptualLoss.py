@@ -1,6 +1,7 @@
 import torch
 from torchvision import models
 import torch.nn.functional as F
+from torchvision import transforms
 
 '''
 Perceptual loss functions are used when comparing two different images that look similar
@@ -59,7 +60,8 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
     def normalize(self, batch):
         # Trước khi đưa vào VGG thì dùng std normalize
         # normalize using imagenet mean and std
-        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        normalize = transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         return normalize(batch)
 
     def forward_img(self, image):
@@ -86,4 +88,3 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
             losses.append(loss_i)
 
         return sum(losses)
-
