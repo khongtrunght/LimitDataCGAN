@@ -1,15 +1,10 @@
-import numpy as np
 import os
 
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
-
 from PIL import Image
+from torch.utils.data import Dataset
 
 
 def pil_loader(path):
-    # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img.convert('RGB')
