@@ -69,7 +69,6 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
         images_after_perceptual_layers = []
         for index, layer in enumerate(self.vgg_partial):
             image = layer(image)
-            print(image.shape)
             if index in self.perceptual_layers:
                 images_after_perceptual_layers.append(image)
         return images_after_perceptual_layers
