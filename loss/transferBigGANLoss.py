@@ -37,13 +37,14 @@ class TransferBigGANLoss(nn.Module):
 
         return self.PerceptualLoss.forward(x, y)
 
-    def EM_loss(self, z):  # term 3
+    def earth_mover_loss(self, z):  # term 3
         """
         EM distance between z and N(0,1)
         """
         dim_z = z.shape[1]
         N = z.shape[0]  # Batch size
-        r = torch.randn((N * 10, dim_z), device=z.device)  # r ~ N(0,1), lấy k = N*10
+        # r ~ N(0,1), lấy k = N*10
+        r = torch.randn((N * 10, dim_z), device=z.device)
         z_mul_r = torch.matmul(z, r.permute(1, 0))  # z*r.T
         dist = torch.sum(z ** 2, dim=1, keepdim=True) - 2 * z_mul_r + torch.sum(r ** 2,
                                                                                 dim=1)  # ||z_i - r_j|| (norm 2)

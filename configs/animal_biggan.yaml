@@ -28,7 +28,7 @@ model_params:
 
 
 data_model_params:
-  batch_size: 25
+  batch_size: 5
   img_size: 128
   data_size: 45
 
@@ -40,7 +40,7 @@ trainer_params:
   gpus: 1
   max_epochs: 10000
   log_every_n_steps: 50
-  # fast_dev_run : True
+  fast_dev_run : True
   # check_val_every_n_epoch : 50
   reload_dataloaders_every_epoch : False
 
