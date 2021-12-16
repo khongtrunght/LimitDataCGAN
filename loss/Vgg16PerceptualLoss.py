@@ -84,7 +84,7 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
 
         losses = []
         for x_i, y_i in zip(self.forward_img(x), self.forward_img(y)):
-            loss_i = self.F.l1_loss(x_i, y_i, reduction='mean')
+            loss_i = F.l1_loss(x_i, y_i, reduction='mean')
             losses.append(loss_i)
 
         return sum(losses)
