@@ -70,6 +70,6 @@ class TransferBigGANLoss(nn.Module):
         loss += self.pixel_level_loss(x, y)
         loss += self.scale_per * self.semantic_level_loss(x, y)
         loss += self.scale_emd * self.earth_mover_loss(z)
-        loss += self.scale_reg * self.l1_reg(W)
+        loss += self.scale_reg * self.regulization_loss(W)
 
         return loss
