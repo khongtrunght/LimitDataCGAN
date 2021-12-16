@@ -31,7 +31,6 @@ class TransferBigGANLoss(nn.Module):
         Vì vậy phải chuyển y từ 0->1 thành -1->1
         '''
         return F.l1_loss(x, 2.0 * (y - 0.5))
-        return F.l1_loss(x, y)
 
     def semantic_level_loss(self, x, y):  # term 2
 
