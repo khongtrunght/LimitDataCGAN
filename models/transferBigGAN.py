@@ -42,11 +42,11 @@ class TransferBigGAN(pl.LightningModule):
         self.scale = nn.Parameter(torch.ones(in_channels,))
         self.shift = nn.Parameter(torch.zeros(in_channels,))
 
-        init_weight = generator.shared.weight.mean(
-            dim=0, keepdim=True).transpose(1, 0)
-
         self.class_embeddings = nn.Embedding(
             n_classes, self.shared_embedding_size)
+
+        torch.nn.init.kaiming_normal_(self.class_embeddings.weight)
+
         del generator.shared
 
         # self.losses de luu lai loss trong qua trinh tinh toan
@@ -64,7 +64,7 @@ class TransferBigGAN(pl.LightningModule):
 
     def forward(self, z, y):  # y
         '''
-        z: shape (batch_size, chuabiet)
+        z: shape (batch_size, embedding_size)
         y: shape (batch_size, shared_embedding_size)
         '''
 
@@ -140,41 +140,21 @@ class TransferBigGAN(pl.LightningModule):
 
     def configure_optimizers(self):
 
-        def setup_optimizer(model, lr_g_batch_stat, linear_gen, scale_shift, embed, class_conditional_embed, step, step_factor=0.1):
-            # group parameters by lr
-            params = []
-            params.append(
-                {"params": list(model.batch_stat_generator_params().values()), "lr": lr_g_batch_stat})
-            params.append(
-                {"params": list(model.linear_generator_params().values()), "lr": linear_gen})
-            params.append(
-                {"params": list(model.after_first_linear_params().values()), "lr": scale_shift})
-            params.append(
-                {"params": list(model.embeddings_params().values()), "lr": embed})
-            params.append({"params": list(
-                model.class_conditional_embeddings_params().values()), "lr": class_conditional_embed})
+        params = []
+        params.append(
+            {"params": list(self.batch_stat_generator_params().values()), "lr": self.lr_args.get('linear_batch_stat')})
+        params.append(
+            {"params": list(self.linear_generator_params().values()), "lr": self.lr_args.get('linear_gen')})
+        params.append(
+            {"params": list(self.after_first_linear_params().values()), "lr": self.lr_args.get('scale_shift')})
+        params.append(
+            {"params": list(self.embeddings_params().values()), "lr": self.lr_args.get('embed')})
+        params.append({"params": list(
+            self.class_conditional_embeddings_params().values()), "lr": self.lr_args.get('class_conditional_embed')})
 
-            # setup optimizer
-            # 0 is okay because sepcific lr is set by `params`
-            optimizer = optim.Adam(params, lr=0)
-            scheduler = lr_scheduler.StepLR(
-                optimizer, step_size=step, gamma=step_factor)
-            return optimizer, scheduler
-
-        optimizer, scheduler = setup_optimizer(self,
-                                               linear_gen=self.lr_args.get(
-                                                   'linear_gen'),
-                                               lr_g_batch_stat=self.lr_args.get(
-                                                   'linear_batch_stat'),
-                                               scale_shift=self.lr_args.get(
-                                                   'scale_shift'),
-                                               embed=self.lr_args.get('embed'),
-                                               class_conditional_embed=self.lr_args.get(
-                                                   'class_conditional_embed'),
-                                               step=self.lr_args.get('step'),
-                                               step_factor=self.lr_args.get(
-                                                   'step_factor'),
-                                               )
+        optimizer = optim.Adam(params, lr=0)
+        scheduler = lr_scheduler.StepLR(
+            optimizer, step_size=self.lr_args.get('step'), gamma=self.lr_args.get('step_factor'))
 
         lr_scheduler_config = {
             # REQUIRED: The scheduler instance
@@ -212,8 +192,6 @@ class TransferBigGAN(pl.LightningModule):
         indices = labels[0]
         real_label = labels[1]
 
-        # to do scheduler step
-
         embeddings = self.embeddings(indices)
         embeddings_eps = torch.randn(
             embeddings.size(), device=self.device) * 0.01
@@ -228,11 +206,4 @@ class TransferBigGAN(pl.LightningModule):
         if self.global_step % 50 == 0:
             random(self, f'samples_{self.global_step}.jpg', truncate=True)
 
-        # todo : self.losses.update(loss.item(), img.size(0))
-
         return {"loss": loss}
-
-    # def training_epoch_end(self, outputs):
-    #     if self.global_step % 500 == 0:
-    #         super().training_epoch_end(outputs)
-    #         random(self, f'samples_{self.global_step}.jpg', truncate=True)
