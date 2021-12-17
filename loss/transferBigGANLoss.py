@@ -36,7 +36,7 @@ class TransferBigGANLoss(nn.Module):
 
         return self.PerceptualLoss.forward(x, y)
 
-    def earth_mover_loss(self, z):  # term 3
+    def EM_loss(self, z):  # term 3
         """
         EM distance between z and N(0,1)
         """
@@ -67,8 +67,11 @@ class TransferBigGANLoss(nn.Module):
         '''
         loss = 0
         loss += self.pixel_level_loss(x, y)
+        # print('term1:',self.pixel_level_loss(x, y))
         loss += self.scale_per * self.semantic_level_loss(x, y)
-        loss += self.scale_emd * self.earth_mover_loss(z)
+        # print('term2:', self.semantic_level_loss(x, y))
+        loss += self.scale_emd * self.EM_loss(z)
+        # print('term3:',self.EM_loss(z))
         loss += self.scale_reg * self.regulization_loss(W)
-
+        # print('term4:',self.regulization_loss(W))
         return loss
