@@ -3,3 +3,4 @@ lightning_logs/
 *.pyc 
 __pycache__/
 experiments/
+.idea/

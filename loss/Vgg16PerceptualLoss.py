@@ -10,7 +10,7 @@ differences, like content and style discrepancies, between images.
 
 
 class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
-    def __init__(self, perceptual_layers=[1, 3, 6, 8, 11, 13, 15, 18, 20, 22], requires_grad=False):
+    def __init__(self, perceptual_layers=[1, 3, 6, 8, 11, 13, 15, 18, 20],loss_func="l1", requires_grad=False):
         '''
         Kiến trúc của mạng VGG16
         Sử dụng percepture loss ở sau layer ReLU: 1, 3, 6, 8, 11, 13, 15, 18, 20, 22
@@ -50,8 +50,13 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
         super(PerceptualLoss, self).__init__()
         vgg_pretrained_features = models.vgg16(pretrained=True).features.eval()
         self.perceptual_layers = perceptual_layers
-        self.vgg_partial = torch.nn.Sequential(*list(vgg_pretrained_features))
-
+        self.vgg_partial = torch.nn.Sequential(*list(vgg_pretrained_features))[0:21]
+        if loss_func == 'l1':
+          self.loss_func=F.l1_loss
+        elif loss_func == 'l2':
+          self.loss_func=F.mse_loss
+        else:
+          self.loss_func = 0
         if not requires_grad:
             for param in self.parameters():
                 param.requires_grad = False
@@ -67,7 +72,6 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
         images_after_perceptual_layers = []
         for index, layer in enumerate(self.vgg_partial):
             image = layer(image)
-            print(image.shape)
             if index in self.perceptual_layers:
                 images_after_perceptual_layers.append(image)
         return images_after_perceptual_layers
@@ -82,7 +86,7 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
 
         losses = []
         for x_i, y_i in zip(self.forward_img(x), self.forward_img(y)):
-            loss_i = self.F.l1_loss(x_i, y_i, reduction='mean')
+            loss_i = F.l1_loss(x_i, y_i, reduction='mean')
             losses.append(loss_i)
 
         return sum(losses)

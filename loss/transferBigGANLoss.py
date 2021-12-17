@@ -31,7 +31,7 @@ class TransferBigGANLoss(nn.Module):
         Vì vậy phải chuyển y từ 0->1 thành -1->1
         '''
         return F.l1_loss(x, 2.0 * (y - 0.5))
-        return F.l1_loss(x, y)
+
 
     def semantic_level_loss(self, x, y):  # term 2
 
@@ -55,6 +55,7 @@ class TransferBigGANLoss(nn.Module):
         '''
         return torch.mean(dist.min(dim=0)[0]) + torch.mean(dist.min(dim=1)[0])
 
+
     def regulization_loss(self, W):  # term 4
         return torch.mean(W ** 2)
 
@@ -67,8 +68,11 @@ class TransferBigGANLoss(nn.Module):
         '''
         loss = 0
         loss += self.pixel_level_loss(x, y)
+        # print('term1:',self.pixel_level_loss(x, y))
         loss += self.scale_per * self.semantic_level_loss(x, y)
-        loss += self.scale_emd * self.earth_mover_loss(z)
-        loss += self.scale_reg * self.l1_reg(W)
-
+        # print('term2:', self.semantic_level_loss(x, y))
+        loss += self.scale_emd * self.EM_loss(z)
+        # print('term3:',self.EM_loss(z))
+        loss += self.scale_reg * self.regulization_loss(W)
+        # print('term4:',self.regulization_loss(W))
         return loss
