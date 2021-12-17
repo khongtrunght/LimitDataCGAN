@@ -45,7 +45,13 @@ class TransferBigGAN(pl.LightningModule):
         self.class_embeddings = nn.Embedding(
             n_classes, self.shared_embedding_size)
 
-        torch.nn.init.kaiming_normal_(self.class_embeddings.weight)
+        # torch.nn.init.kaiming_normal_(self.class_embeddings.weight)
+        # init weight từ shared embedding của gen
+        idx = torch.LongTensor([283, 245, 292])
+        init_weight = self.generator.shared.weight.index_select(
+            0, idx)
+        assert init_weight.shape == self.class_embeddings.weight.shape
+        self.class_embeddings.weight.data = init_weight
 
         del generator.shared
 
@@ -60,6 +66,8 @@ class TransferBigGAN(pl.LightningModule):
         )
 
         self.lr_args = kwargs.get("lr")
+        # random(self, f'samples_test.jpg', truncate=True)
+
     # y là vector da di qua embeding
 
     def forward(self, z, y):  # y
@@ -207,3 +215,44 @@ class TransferBigGAN(pl.LightningModule):
             random(self, f'samples_{self.global_step}.jpg', truncate=True)
 
         return {"loss": loss}
+
+
+if __name__ == '__main__':
+    def setup_model(name, data_size, config_model, resume=None, biggan_pretrain_path='../data/G_ema.pth'):
+        if name == 'TransferBigGAN':
+            generator = biggan.Generator(**bigagn128config)
+            generator.load_state_dict(torch.load(
+                biggan_pretrain_path, map_location=lambda storage, loc: storage))
+            model = tranfer_models[config_model
+                                   ['name']](generator=generator, data_size=data_size, **config_model)
+            return model
+
+    config_model = {
+        'name': 'TransferBigGAN',
+        # learning rate
+        'lr':
+        {'linear_gen': 0.0000001,
+         'linear_batch_stat': 0.0005,
+         'embed': 0.05,
+         'scale_shift': 0.0005,
+         'class_conditional_embed': 0.001,
+         'step': 3000,  # giam learning rate sau moi <step> iter,
+         'step_factor': 0.1},
+        # loss
+        'loss':
+        {'perceptural': 0.1,
+         'earth_mover': 0.1,
+         'regulization': 0.02,
+         'norm_img': True,
+         'norm_perceptural': True,
+         'dis_perceptural': "l2"},
+
+
+        'iteration':
+        {'num_iter': 10000,
+         'num_workers': 4},
+
+        'n_classes': 3
+    }
+
+    setup_model('TransferBigGAN', 45, config_model)
