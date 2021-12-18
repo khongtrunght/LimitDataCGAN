@@ -11,7 +11,7 @@ differences, like content and style discrepancies, between images.
 
 
 class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
-    def __init__(self, perceptual_layers=[1, 3, 6, 8, 11, 13, 15, 18, 20,22],loss_func="l2", requires_grad=False):
+    def __init__(self, perceptual_layers=[1, 3, 6, 8, 11, 13, 15, 18, 20, 22], loss_func="l2", requires_grad=False):
         '''
         Kiến trúc của mạng VGG16
         Sử dụng percepture loss ở sau layer ReLU: 1, 3, 6, 8, 11, 13, 15, 18, 20, 22
@@ -51,13 +51,14 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
         super(PerceptualLoss, self).__init__()
         vgg_pretrained_features = models.vgg16(pretrained=True).features.eval()
         self.perceptual_layers = perceptual_layers
-        self.vgg_partial = torch.nn.Sequential(*list(vgg_pretrained_features))[0:22+1]
+        self.vgg_partial = torch.nn.Sequential(
+            *list(vgg_pretrained_features))[0:22+1]
         if loss_func == 'l1':
-          self.loss_func=F.l1_loss
+            self.loss_func = F.l1_loss
         elif loss_func == 'l2':
-          self.loss_func=F.mse_loss
+            self.loss_func = F.mse_loss
         else:
-          self.loss_func = 0
+            self.loss_func = 0
 
         if not requires_grad:
             for param in self.parameters():
@@ -66,7 +67,8 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
     def normalize(self, batch):
         # Trước khi đưa vào VGG thì dùng std normalize
         # normalize using imagenet mean and std
-        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        normalize = transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         return normalize(batch)
 
     def forward_img(self, image):
@@ -88,8 +90,7 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
 
         losses = []
         for x_i, y_i in zip(self.forward_img(x), self.forward_img(y)):
-            loss_i = loss_func(x_i, y_i, reduction='mean')
+            loss_i = self.loss_func(x_i, y_i, reduction='mean')
             losses.append(loss_i)
 
         return sum(losses)
-
