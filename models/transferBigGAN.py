@@ -47,9 +47,20 @@ class TransferBigGAN(pl.LightningModule):
 
         # torch.nn.init.kaiming_normal_(self.class_embeddings.weight)
         # init weight từ shared embedding của gen
-        idx = torch.LongTensor([283, 245, 292])
-        init_weight = self.generator.shared.weight.index_select(
-            0, idx)
+        cat = torch.LongTensor([283, 281, 282])
+        dog = torch.LongTensor([198, 253, 232])
+        lion = torch.LongTensor([292, 282, 291])
+
+        cat_embeds = self.generator.shared.weight.index_select(0, cat)
+        dog_embeds = self.generator.shared.weight.index_select(0, dog)
+        lion_embeds = self.generator.shared.weight.index_select(0, lion)
+
+        cat_embeds = cat_embeds.mean(dim=0, keepdim=True)
+        dog_embeds = dog_embeds.mean(dim=0, keepdim=True)
+        lion_embeds = lion_embeds.mean(dim=0, keepdim=True)
+
+        init_weight = torch.cat([cat_embeds, dog_embeds, lion_embeds], dim=0)
+
         assert init_weight.shape == self.class_embeddings.weight.shape
         self.class_embeddings.weight.data = init_weight
 
@@ -66,7 +77,8 @@ class TransferBigGAN(pl.LightningModule):
         )
 
         self.lr_args = kwargs.get("lr")
-        # random(self, f'samples_test.jpg', truncate=True)
+        random(self, f'samples_test.jpg', truncate=True)
+        exit()
 
     # y là vector da di qua embeding
 
@@ -212,7 +224,10 @@ class TransferBigGAN(pl.LightningModule):
                               self.class_embeddings.weight)
 
         if self.global_step % 50 == 0:
-            random(self, f'samples_{self.global_step}.jpg', truncate=True)
+            with torch.no_grad():
+                random(self, f'samples_{self.global_step}.jpg', truncate=True)
+                interpolate(self, f'interpolate_{self.global_step}.jpg', source= 1, dist= 10)
+                reconstruct(self, f'reconstruct_{self.global_step}.jpg', indices_labels= torch.arange(4,13))
 
         return {"loss": loss}
 
