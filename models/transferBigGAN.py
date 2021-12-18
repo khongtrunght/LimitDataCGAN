@@ -2,7 +2,7 @@ import torch
 import pytorch_lightning as pl
 import torch.nn as nn
 from loss.transferBigGANLoss import TransferBigGANLoss
-from visualizers import random
+from visualizers import random, interpolate, reconstruct
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from pytorch_lightning.callbacks import BaseFinetuning
