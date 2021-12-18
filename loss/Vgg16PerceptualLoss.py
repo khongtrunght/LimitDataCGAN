@@ -57,7 +57,7 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
         elif loss_func == 'l2':
           self.loss_func=F.mse_loss
         else:
-          self.loss_func = 0
+          self.loss_func = F.mse_loss
 
         if not requires_grad:
             for param in self.parameters():
@@ -88,7 +88,7 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
 
         losses = []
         for x_i, y_i in zip(self.forward_img(x), self.forward_img(y)):
-            loss_i = loss_func(x_i, y_i, reduction='mean')
+            loss_i = self.loss_func(x_i, y_i, reduction='mean')
             losses.append(loss_i)
 
         return sum(losses)
