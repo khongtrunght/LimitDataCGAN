@@ -11,7 +11,7 @@ differences, like content and style discrepancies, between images.
 
 
 class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
-    def __init__(self, perceptual_layers=[1, 3, 6, 8, 11, 13, 15, 18, 20,22],loss_func="l1", requires_grad=False):
+    def __init__(self, perceptual_layers=[1, 3, 6, 8, 11, 13, 15, 18, 20,22],loss_func="l2", requires_grad=False):
         '''
         Kiến trúc của mạng VGG16
         Sử dụng percepture loss ở sau layer ReLU: 1, 3, 6, 8, 11, 13, 15, 18, 20, 22
@@ -58,6 +58,7 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
           self.loss_func=F.mse_loss
         else:
           self.loss_func = 0
+
         if not requires_grad:
             for param in self.parameters():
                 param.requires_grad = False
@@ -87,7 +88,7 @@ class PerceptualLoss(torch.nn.Module):  # sử dụng VGG16 model
 
         losses = []
         for x_i, y_i in zip(self.forward_img(x), self.forward_img(y)):
-            loss_i = F.l1_loss(x_i, y_i, reduction='mean')
+            loss_i = loss_func(x_i, y_i, reduction='mean')
             losses.append(loss_i)
 
         return sum(losses)
