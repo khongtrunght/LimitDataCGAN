@@ -3,11 +3,11 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .Vgg16PerceptualLoss import Vgg16PerceptualLoss
+from .Vgg16PerceptualLoss import PerceptualLoss
 
 
 class TransferBigGANLoss(nn.Module):
-    def __init__(self, perceptual_loss="vgg",
+    def __init__(self,
                  perceptural=0.001,
                  earth_mover=0.1,
                  regulization=0.02,
@@ -15,82 +15,63 @@ class TransferBigGANLoss(nn.Module):
                  norm_perceptural=False,
                  dis_perceptural="l1",
                  ):
-        '''
-        perceptual_loss: preceptural loss
-        perceptual_facter: 
-        '''
         super(TransferBigGANLoss, self).__init__()
-        if perceptual_loss == "vgg":
-            self.perceptual_loss = Vgg16PerceptualLoss(
-                loss_func=dis_perceptural)
-        else:
-            self.perceptual_loss = perceptual_loss
+
         self.scale_per = perceptural
         self.scale_emd = earth_mover
         self.scale_reg = regulization
-        self.normalize_img = norm_img
-        self.normalize_perceptural = norm_perceptural
+        self.PerceptualLoss = PerceptualLoss()
 
-    def earth_mover_dist(self, z):
+    def pixel_level_loss(self, x, y):  # term 1
+        '''
+        x:generated image. shape = (batch,channel,h,w)
+        y:target image. shape = (batch,channel,h,w)
+        Vì sau khi cho ảnh y qua transforms.ToTensor() sẽ scale pixel từ 0->255 thành 0->1
+        Ảnh generate được đi qua hàm tanh nên pixel có giá trị từ -1 -> 1
+        Vì vậy phải chuyển y từ 0->1 thành -1->1
+        '''
+        return F.l1_loss(x, 2.0 * (y - 0.5))
+
+    def semantic_level_loss(self, x, y):  # term 2
+
+        return self.PerceptualLoss.forward(x, y)
+
+    def EM_loss(self, z):  # term 3
         """
-        taken from https://github.com/nogu-atsu/SmallGAN/blob/f604cd17516963d8eec292f3faddd70c227b609a/gen_models/ada_generator.py#L150-L162
-        earth mover distance between z and standard normal distribution
+        EM distance between z and N(0,1)
         """
         dim_z = z.shape[1]
-        n = z.shape[0]  # batchsize
-        t = torch.randn((n * 10, dim_z), device=z.device)
-        dot = torch.matmul(z, t.permute(-1, -2))
-
-        # in the original implementation transb=True
-        # so we want to do t = t.swapaxes(-1, -2)
-        # from https://github.com/chainer/chainer/blob/c2cf7fb9c49cf98a94caf453f644d612ace45625/chainer/functions/math/matmul.py#L
-        # then swapaxes is .permute
-        # from https://discuss.pytorch.org/t/swap-axes-in-pytorch/970
-
-        dist = torch.sum(z ** 2, dim=1, keepdim=True) - \
-            2 * dot + torch.sum(t ** 2, dim=1)
-
+        N = z.shape[0]  # Batch size
+        # r ~ N(0,1), lấy k = N*10
+        r = torch.randn((N * 10, dim_z), device=z.device)
+        z_mul_r = torch.matmul(z, r.permute(1, 0))  # z*r.T
+        dist = torch.sum(z ** 2, dim=1, keepdim=True) - 2 * z_mul_r + torch.sum(r ** 2,
+                                                                                dim=1)  # ||z_i - r_j|| (norm 2)
+        '''
+           [[||z_1 - r_1||, ||z_1 - r_2||, ..., ||z_1 - r_k|| ]
+    dist =  [||z_2 - r_1||, ||z_2 - r_2||, ..., ||z_2 - r_k|| ]
+            [     ...           ...        ...      ...       ]
+            [||z_N - r_1||, ||z_N - r_2||, ..., ||z_N - r_k|| ]]
+        '''
         return torch.mean(dist.min(dim=0)[0]) + torch.mean(dist.min(dim=1)[0])
 
-    def l1_reg(self, W):
-        # https://github.com/nogu-atsu/SmallGAN/blob/2293700dce1e2cd97e25148543532814659516bd/gen_models/ada_generator.py#L146-L148
-        # NOTE: I think this should be implemented as weight decay in the optimizer. It's not beatiful code to pass W into loss function.
+    def regulization_loss(self, W):  # term 4
         return torch.mean(W ** 2)
 
     def forward(self, x, y, z, W):
-        #from IPython import embed;embed()
         '''
-        x:generated image. shape is (batch,channel,h,w)
-        y:target image. shape is (batch,channel,h,w)
-        z: seed image embeddings (BEFORE adding the noise of eps). shape is (batch,embedding_dim)
+        x:generated image. shape = (batch,channel,h,w)
+        y:target image. shape = (batch,channel,h,w)
+        z: seed image embeddings (BEFORE adding the noise of eps). shape = (batch,embedding_dim)
         W: model.linear.weight
-        see the equation (3) in the paper
         '''
-
-        # F.mse_loss is L2 loss
-        # F.l1_loss is L1 loss
-
-        # pytorch regards an image as a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
-        # (see transforms.ToTensor() for details)
-        # but the model output uses tanh  so x is ranging (-1 to 1)
-        # so let's rescale y to (-1 to 1) from (0 to 1)
-        # chainer implementation use (-1,1) for loss computation, so i didn't do the other way around (i.e. scale x to (0,1))
-        image_loss = F.l1_loss(x, 2.0*(y - 0.5))
-        if self.normalize_img:
-            loss = image_loss/image_loss.item()
-        else:
-            loss = image_loss
-        # rescaled to 1 in the chainer code
-        # see https://github.com/nogu-atsu/SmallGAN/blob/2293700dce1e2cd97e25148543532814659516bd/gen_models/ada_generator.py#L68-L69
-
-        for ploss in self.perceptual_loss(img1=x, img2=y, img1_minmax=(-1, 1), img2_minmax=(0, 1)):
-            if self.normalize_perceptural:
-                loss += self.scale_per*ploss/ploss.item()
-            else:
-                loss += self.scale_per*ploss
-
-        loss += self.scale_emd*self.earth_mover_dist(z)
-
-        loss += self.scale_reg*self.l1_reg(W)
-
+        loss = 0
+        loss += self.pixel_level_loss(x, y)
+        # print('term1:',self.pixel_level_loss(x, y))
+        loss += self.scale_per * self.semantic_level_loss(x, y)
+        # print('term2:', self.semantic_level_loss(x, y))
+        loss += self.scale_emd * self.EM_loss(z)
+        # print('term3:',self.EM_loss(z))
+        loss += self.scale_reg * self.regulization_loss(W)
+        # print('term4:',self.regulization_loss(W))
         return loss
