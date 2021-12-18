@@ -40,7 +40,7 @@ trainer_params:
   gpus: 1
   max_epochs: 10000
   log_every_n_steps: 50
-  fast_dev_run : True
+  # fast_dev_run : True
   # check_val_every_n_epoch : 50
   reload_dataloaders_every_epoch : False
 
@@ -50,4 +50,4 @@ trainer_params:
 logging_params:
   save_dir: "lightning_logs/"
   name: 'TransferBigGAN'
-  manual_seed: 1265
+  # manual_seed: 1265

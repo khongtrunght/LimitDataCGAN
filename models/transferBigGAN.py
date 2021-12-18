@@ -77,8 +77,6 @@ class TransferBigGAN(pl.LightningModule):
         )
 
         self.lr_args = kwargs.get("lr")
-        random(self, f'samples_test.jpg', truncate=True)
-        exit()
 
     # y là vector da di qua embeding
 
