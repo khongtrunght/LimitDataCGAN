@@ -224,8 +224,10 @@ class TransferBigGAN(pl.LightningModule):
         if self.global_step % 50 == 0:
             with torch.no_grad():
                 random(self, f'samples_{self.global_step}.jpg', truncate=True)
-                interpolate(self, f'interpolate_{self.global_step}.jpg', source= 1, dist= 10)
-                reconstruct(self, f'reconstruct_{self.global_step}.jpg', indices_labels= torch.arange(4,13))
+                interpolate(
+                    self, f'interpolate_{self.global_step}.jpg', source=1, dist=10)
+                reconstruct(self, f'reconstruct_{self.global_step}.jpg', indices_labels=(
+                    indices, real_label))
 
         return {"loss": loss}
 
