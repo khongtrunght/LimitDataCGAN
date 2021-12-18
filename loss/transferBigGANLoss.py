@@ -12,15 +12,18 @@ class TransferBigGANLoss(nn.Module):
                  earth_mover=0.1,
                  regulization=0.02,
                  norm_img=True,
-                 norm_perceptural=False,
-                 dis_perceptural="l1",
+                 norm_perceptural=True,
+                 dis_perceptural="l2",
                  ):
         super(TransferBigGANLoss, self).__init__()
 
         self.scale_per = perceptural
         self.scale_emd = earth_mover
         self.scale_reg = regulization
-        self.PerceptualLoss = PerceptualLoss()
+        self.norm_img = norm_img
+        self.norm_perceptural = norm_perceptural
+        self.dis_perceptual = dis_perceptural
+        self.PerceptualLoss = PerceptualLoss(loss_func=self.dis_perceptual)
 
     def pixel_level_loss(self, x, y):  # term 1
         '''
@@ -66,9 +69,18 @@ class TransferBigGANLoss(nn.Module):
         W: model.linear.weight
         '''
         loss = 0
-        loss += self.pixel_level_loss(x, y)
+        term1 = self.pixel_level_loss(x, y)
+        if self.norm_img:
+            loss += term1/term1.item()
+        else:
+            loss += term1
         # print('term1:',self.pixel_level_loss(x, y))
-        loss += self.scale_per * self.semantic_level_loss(x, y)
+
+        term2 = self.semantic_level_loss(x, y)
+        if self.norm_perceptural:
+            loss += self.scale_per * term2/term2.item()
+        else:
+            loss += self.scale_per * term2
         # print('term2:', self.semantic_level_loss(x, y))
         loss += self.scale_emd * self.EM_loss(z)
         # print('term3:',self.EM_loss(z))
