@@ -11,11 +11,11 @@ model_params:
     step_factor: 0.1
 #loss
   loss:
-    perceptural: 0.1
+    perceptural: 0.001
     earth_mover: 0.1
     regulization: 0.02
-    norm_img : True
-    norm_perceptural: True
+    norm_img : False
+    norm_perceptural: False
     dis_perceptural: "l2"
     
 
@@ -30,7 +30,7 @@ model_params:
 data_model_params:
   batch_size: 25
   img_size: 128
-  data_size: 45
+  data_size: 360
 
    
 
