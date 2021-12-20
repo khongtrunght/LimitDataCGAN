@@ -25,7 +25,7 @@ model_params:
   
   n_classes : 3
   log_freq: 100   
-  embedding_init: 'normal'
+  embedding_init: 'zero'
   conditional_init: 'pretrain'
 
 
