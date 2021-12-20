@@ -25,7 +25,7 @@ model_params:
   
   n_classes : 3
   log_freq: 100   
-  embedding_init: 'zero'
+  embedding_init: 'normal'
   conditional_init: 'pretrain'
 
 
@@ -51,7 +51,7 @@ trainer_params:
 
 
 logging_params:
-  save_dir: "/content/drive/MyDrive/DL_project_group_9/test"
+  save_dir: "/content/drive/MyDrive/DL_project_group_9/best"
   name: 'TransferBigGAN'
   manual_seed: 1265
   ckpt_freq: 100 # sau 100 epoch
