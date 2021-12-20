@@ -46,6 +46,7 @@ if __name__ == '__main__':
     logger = TensorBoardLogger(
         save_dir=config['logging_params']['save_dir'],
         name=config['logging_params']['name'],
+        version=0
     )
 
     torch.manual_seed(config['logging_params']['manual_seed'])
@@ -65,4 +66,7 @@ if __name__ == '__main__':
     trainer = Trainer(callbacks=[checkpoint_callback, ModelSummary(max_depth=2)],
                       logger=logger, **config['trainer_params'])
 
-    trainer.fit(model, dataset)
+    if not args.resume:
+        trainer.fit(model, dataset)
+    else:
+        trainer.fit(model, dataset, ckpt_path=args.resume)

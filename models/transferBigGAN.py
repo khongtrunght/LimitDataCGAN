@@ -1,11 +1,13 @@
 import torch
 import pytorch_lightning as pl
 import torch.nn as nn
+import torchvision
 from loss.transferBigGANLoss import TransferBigGANLoss
 from visualizers import random, interpolate, reconstruct
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from pytorch_lightning.callbacks import BaseFinetuning
+from scipy.stats import truncnorm
 
 
 class GeneratorFreeze(BaseFinetuning):
@@ -221,15 +223,84 @@ class TransferBigGAN(pl.LightningModule):
         loss = self.criterion(img_gen, img, embeddings,
                               self.class_embeddings.weight)
 
-        if self.global_step % 50 == 0:
-            with torch.no_grad():
-                random(self, f'samples_{self.global_step}.jpg', truncate=True)
-                interpolate(
-                    self, f'interpolate_{self.global_step}.jpg', source=1, dist=10)
-                reconstruct(self, f'reconstruct_{self.global_step}.jpg', indices_labels=(
-                    indices, real_label))
+        if self.global_step % 100 == 0:
+            random(self, f'samples_{self.global_step}.jpg', truncate=True)
+            interpolate(
+                self, f'interpolate_{self.global_step}.jpg', source=1, dist=10)
+            reconstruct(self, f'reconstruct_{self.global_step}.jpg', indices_labels=(
+                indices, real_label))
 
         return {"loss": loss}
+
+    def interpolate(self, out_path, source, dist, trncate=0.4, num=5):
+        with torch.no_grad():
+            self.eval()
+            device = next(self.parameters()).device
+            dataset_size = self.embeddings.weight.size()[0]
+            indices = torch.tensor([source, dist], device=device)
+            indices = indices.to(device)
+            embeddings = self.embeddings(indices)
+            embeddings = embeddings[[0]] * torch.linspace(1, 0, num, device=device)[
+                :, None] + embeddings[[1]] * torch.linspace(0, 1, num, device=device)[:, None]
+
+            batch_size = embeddings.size()[0]
+
+            labels = [0, ] * batch_size
+            labels = torch.tensor(labels, device=device)
+            labels_embeddings = self.class_embeddings(labels)
+
+            image_tensors = self(embeddings, labels_embeddings)
+            grid = torchvision.utils.make_grid(image_tensors, normalize=True)
+            self.logger.experiment.add_image(
+                "interpolate", grid, self.global_step)
+
+    def random(self, out_path, tmp=0.4, n=9, truncate=False):
+        with torch.no_grad():
+            self.eval()
+            device = next(self.parameters()).device
+            dataset_size = self.embeddings.weight.size()[0]
+            dim_z = self.embeddings.weight.size(1)
+            if truncate:
+                embeddings = truncnorm(-tmp, tmp).rvs(n *
+                                                      dim_z).astype("float32").reshape(n, dim_z)
+            else:
+                embeddings = np.random.normal(
+                    0, tmp, size=(n, dim_z)).astype("float32")
+            embeddings = torch.tensor(embeddings, device=device)
+            batch_size = embeddings.size()[0]
+
+            labels = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+            labels = torch.tensor(labels, device=device)
+            label_embeddings = self.class_embeddings(labels)
+
+            image_tensors = self(embeddings, label_embeddings)
+            grid = torchvision.utils.make_grid(image_tensors, normalize=True)
+            self.logger.experiment.add_image(
+                "samples", grid, self.global_step)
+
+    def reconstruct(self, out_path, indices_labels, add_small_noise=False):
+        with torch.no_grad():
+            self.eval()
+            device = next(self.parameters()).device
+            dataset_size = self.embeddings.weight.size()[0]
+            indices, labels = indices_labels
+            assert type(indices) == torch.Tensor
+            indices = indices.to(device)
+            embeddings = self.embeddings(indices)
+            batch_size = embeddings.size()[0]
+
+            # labels = [0, ] * batch_size
+            # labels = torch.tensor(labels, device=device)
+            labels = labels.to(device)
+            labels_embeddings = self.class_embeddings(labels)
+
+            if add_small_noise:
+                embeddings += torch.randn(embeddings.size(),
+                                          device=device)*0.01
+            image_tensors = self(embeddings, labels_embeddings)
+            grid = torchvision.utils.make_grid(image_tensors, normalize=True)
+            self.logger.experiment.add_image(
+                "interpolate", grid, self.global_step)
 
 
 if __name__ == '__main__':

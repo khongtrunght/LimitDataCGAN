@@ -1,0 +1,53 @@
+model_params:
+  name: 'TransferBigGAN'
+#learning rate
+  lr:
+    linear_gen: 0.0000001
+    linear_batch_stat: 0.0005
+    embed : 0.05
+    scale_shift: 0.0005
+    class_conditional_embed: 0.001
+    step : 3000 # giam learning rate sau moi <step> iter
+    step_factor: 0.1
+#loss
+  loss:
+    perceptural: 0.001
+    earth_mover: 0.1
+    regulization: 0.02
+    norm_img : False
+    norm_perceptural: False
+    dis_perceptural: "l2"
+    
+
+  iteration:
+    num_iter: 10000
+    num_workers: 4
+  
+  n_classes : 3
+
+
+
+data_model_params:
+  batch_size: 25
+  img_size: 128
+  data_size: 360
+
+   
+
+
+
+trainer_params:
+  gpus: 1
+  max_epochs: 10000
+  log_every_n_steps: 50
+  # fast_dev_run : True
+  # check_val_every_n_epoch : 50
+  reload_dataloaders_every_epoch : False
+
+
+
+
+logging_params:
+  save_dir: "/content/drive/MyDrive/DL_project_group_9/test"
+  name: 'TransferBigGAN'
+  manual_seed: 1265
