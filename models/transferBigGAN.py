@@ -222,12 +222,13 @@ class TransferBigGAN(pl.LightningModule):
         loss = self.criterion(img_gen, img, embeddings,
                               self.class_embeddings.weight)
 
-        if self.global_step % 100 == 0:
+        if self.global_step % 1 == 0:
             self.random(f'samples_{self.global_step}.jpg', truncate=True)
             self.interpolate(
                 f'interpolate_{self.global_step}.jpg', source=1, dist=10)
             self.reconstruct(f'reconstruct_{self.global_step}.jpg', indices_labels=(
                 indices, real_label))
+            self.logger.experiment.add_scalar("loss", loss, self.global_step)
 
         return {"loss": loss}
 
@@ -299,7 +300,7 @@ class TransferBigGAN(pl.LightningModule):
             image_tensors = self(embeddings, labels_embeddings)
             grid = torchvision.utils.make_grid(image_tensors, normalize=True)
             self.logger.experiment.add_image(
-                "interpolate", grid, self.global_step)
+                "reconstruct", grid, self.global_step)
 
 
 if __name__ == '__main__':

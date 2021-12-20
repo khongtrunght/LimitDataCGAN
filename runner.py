@@ -58,9 +58,9 @@ if __name__ == '__main__':
         **config['data_model_params'],)
 
     checkpoint_callback = ModelCheckpoint(
-        dirpath='checkpoints/',
+        dirpath=config['logging_params']['save_dir'],
         filename='transfer-biggan-{epoch:03d}',
-        every_n_epochs=100
+        every_n_epochs=2
     )
 
     trainer = Trainer(callbacks=[checkpoint_callback, ModelSummary(max_depth=2)],
