@@ -18,7 +18,7 @@ class GeneratorFreeze(BaseFinetuning):
 
 
 class TransferBigGAN(pl.LightningModule):
-    def __init__(self, generator, data_size, n_classes=3, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="zero", conditional_init="pretrain", **kwargs):
+    def __init__(self, generator, data_size, n_classes=3, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="normal", conditional_init="pretrain", **kwargs):
         '''
         generator: pretrained generator
         data_size: number of training images, tac gia de nghi nen duoi 100
@@ -37,8 +37,6 @@ class TransferBigGAN(pl.LightningModule):
         if embedding_init == "zero":
             self.embeddings.from_pretrained(torch.zeros(
                 data_size, embedding_size), freeze=False)
-        elif embedding_init == "normal":
-            torch.nn.init.normal_(self.embeddings.weight)
 
         in_channels = self.generator.blocks[0][0].conv1.in_channels
 
@@ -87,6 +85,7 @@ class TransferBigGAN(pl.LightningModule):
 
         self.lr_args = kwargs.get("lr")
         self.log_freq = kwargs.get("log_freq")
+        self.save_hyperparameters()
 
     # y là vector da di qua embeding
 

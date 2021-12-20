@@ -9,6 +9,9 @@ def reconstruct(model, out_path, indices_labels, add_small_noise=False):
         device = next(model.parameters()).device
         dataset_size = model.embeddings.weight.size()[0]
         indices, labels = indices_labels
+        if type(indices) != torch.Tensor:
+            indices = torch.tensor(indices, device=device)
+            labels = torch.tensor(labels, device=device)
         assert type(indices) == torch.Tensor
         indices = indices.to(device)
         embeddings = model.embeddings(indices)
@@ -60,7 +63,7 @@ def interpolate(model, out_path, source, dist, trncate=0.4, num=5):
 # from https://github.com/nogu-atsu/SmallGAN/blob/2293700dce1e2cd97e25148543532814659516bd/gen_models/ada_generator.py#L37-L53
 
 
-def random(model, out_path, tmp=0.4, n=9, truncate=False):
+def random(model, out_path, tmp=0.4, n=9, truncate=True):
     with torch.no_grad():
         model.eval()
         device = next(model.parameters()).device

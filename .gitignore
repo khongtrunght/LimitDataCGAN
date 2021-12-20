@@ -4,3 +4,6 @@ lightning_logs/
 __pycache__/
 experiments/
 .idea/
+eval.py
+test
+eval.ipynb
