@@ -25,6 +25,7 @@ model_params:
   
   n_classes : 3
   log_freq: 100 #log moi 100 step
+  
 
 
 

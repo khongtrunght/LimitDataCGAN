@@ -18,7 +18,7 @@ class GeneratorFreeze(BaseFinetuning):
 
 
 class TransferBigGAN(pl.LightningModule):
-    def __init__(self, generator, data_size, n_classes=3, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="zero", **kwargs):
+    def __init__(self, generator, data_size, n_classes=3, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="zero", conditional_init="pretrain", **kwargs):
         '''
         generator: pretrained generator
         data_size: number of training images, tac gia de nghi nen duoi 100
@@ -37,6 +37,8 @@ class TransferBigGAN(pl.LightningModule):
         if embedding_init == "zero":
             self.embeddings.from_pretrained(torch.zeros(
                 data_size, embedding_size), freeze=False)
+        elif embedding_init == "normal":
+            torch.nn.init.normal_(self.embeddings.weight)
 
         in_channels = self.generator.blocks[0][0].conv1.in_channels
 
@@ -48,19 +50,25 @@ class TransferBigGAN(pl.LightningModule):
 
         # torch.nn.init.kaiming_normal_(self.class_embeddings.weight)
         # init weight từ shared embedding của gen
-        cat = torch.LongTensor([283, 281, 282])
-        dog = torch.LongTensor([198, 253, 232])
-        lion = torch.LongTensor([292, 282, 291])
+        if conditional_init == 'pretrain':
+            cat = torch.LongTensor([283, 281, 282])
+            dog = torch.LongTensor([198, 253, 232])
+            lion = torch.LongTensor([292, 282, 291])
 
-        cat_embeds = self.generator.shared.weight.index_select(0, cat)
-        dog_embeds = self.generator.shared.weight.index_select(0, dog)
-        lion_embeds = self.generator.shared.weight.index_select(0, lion)
+            cat_embeds = self.generator.shared.weight.index_select(0, cat)
+            dog_embeds = self.generator.shared.weight.index_select(0, dog)
+            lion_embeds = self.generator.shared.weight.index_select(0, lion)
 
-        cat_embeds = cat_embeds.mean(dim=0, keepdim=True)
-        dog_embeds = dog_embeds.mean(dim=0, keepdim=True)
-        lion_embeds = lion_embeds.mean(dim=0, keepdim=True)
+            cat_embeds = cat_embeds.mean(dim=0, keepdim=True)
+            dog_embeds = dog_embeds.mean(dim=0, keepdim=True)
+            lion_embeds = lion_embeds.mean(dim=0, keepdim=True)
 
-        init_weight = torch.cat([cat_embeds, dog_embeds, lion_embeds], dim=0)
+            init_weight = torch.cat(
+                [cat_embeds, dog_embeds, lion_embeds], dim=0)
+        elif conditional_init == 'mean':
+            mean_embeds = self.generator.shared.weight.mean(
+                dim=0, keepdim=True)
+            init_weight = mean_embeds.repeat(n_classes, 1)
 
         assert init_weight.shape == self.class_embeddings.weight.shape
         self.class_embeddings.weight.data = init_weight
