@@ -60,7 +60,7 @@ if __name__ == '__main__':
     checkpoint_callback = ModelCheckpoint(
         dirpath=config['logging_params']['save_dir'],
         filename='transfer-biggan-{epoch:03d}',
-        every_n_epochs=2
+        every_n_epochs=config['logging_params']['ckpt_freq'],
     )
 
     trainer = Trainer(callbacks=[checkpoint_callback, ModelSummary(max_depth=2)],

@@ -78,6 +78,7 @@ class TransferBigGAN(pl.LightningModule):
         )
 
         self.lr_args = kwargs.get("lr")
+        self.log_freq = kwargs.get("log_freq")
 
     # y là vector da di qua embeding
 
@@ -222,7 +223,7 @@ class TransferBigGAN(pl.LightningModule):
         loss = self.criterion(img_gen, img, embeddings,
                               self.class_embeddings.weight)
 
-        if self.global_step % 1 == 0:
+        if self.global_step % self.log_freq == 0:
             self.random(f'samples_{self.global_step}.jpg', truncate=True)
             self.interpolate(
                 f'interpolate_{self.global_step}.jpg', source=1, dist=10)

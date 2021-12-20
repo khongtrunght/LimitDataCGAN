@@ -24,6 +24,7 @@ model_params:
     num_workers: 4
   
   n_classes : 3
+  log_freq: 100 #log moi 100 step
 
 
 
@@ -51,3 +52,4 @@ logging_params:
   save_dir: "lightning_logs/"
   name: 'TransferBigGAN'
   manual_seed: 1265
+  ckpt_freq: 100 # sau 100 epoch
