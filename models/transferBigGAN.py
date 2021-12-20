@@ -85,7 +85,6 @@ class TransferBigGAN(pl.LightningModule):
 
         self.lr_args = kwargs.get("lr")
         self.log_freq = kwargs.get("log_freq")
-        self.save_hyperparameters()
 
     # y là vector da di qua embeding
 
