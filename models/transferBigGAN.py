@@ -3,7 +3,6 @@ import pytorch_lightning as pl
 import torch.nn as nn
 import torchvision
 from loss.transferBigGANLoss import TransferBigGANLoss
-from visualizers import random, interpolate, reconstruct
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from pytorch_lightning.callbacks import BaseFinetuning
@@ -224,10 +223,10 @@ class TransferBigGAN(pl.LightningModule):
                               self.class_embeddings.weight)
 
         if self.global_step % 100 == 0:
-            random(self, f'samples_{self.global_step}.jpg', truncate=True)
-            interpolate(
-                self, f'interpolate_{self.global_step}.jpg', source=1, dist=10)
-            reconstruct(self, f'reconstruct_{self.global_step}.jpg', indices_labels=(
+            self.random(f'samples_{self.global_step}.jpg', truncate=True)
+            self.interpolate(
+                f'interpolate_{self.global_step}.jpg', source=1, dist=10)
+            self.reconstruct(f'reconstruct_{self.global_step}.jpg', indices_labels=(
                 indices, real_label))
 
         return {"loss": loss}
