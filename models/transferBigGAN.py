@@ -49,9 +49,9 @@ class TransferBigGAN(pl.LightningModule):
         # torch.nn.init.kaiming_normal_(self.class_embeddings.weight)
         # init weight từ shared embedding của gen
         if conditional_init == 'pretrain':
-            cat = torch.LongTensor([283, 281, 282])
-            dog = torch.LongTensor([198, 253, 232])
-            lion = torch.LongTensor([292, 282, 291])
+            cat = torch.LongTensor([281,285,282,287,284])
+            dog = torch.LongTensor([852, 227, 248, 273, 264])
+            lion = torch.LongTensor([292, 282, 290, 287, 340])
 
             cat_embeds = self.generator.shared.weight.index_select(0, cat)
             dog_embeds = self.generator.shared.weight.index_select(0, dog)
