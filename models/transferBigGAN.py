@@ -18,7 +18,7 @@ class GeneratorFreeze(BaseFinetuning):
 
 
 class TransferBigGAN(pl.LightningModule):
-    def __init__(self, generator, data_size, n_classes=3, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="normal", conditional_init="pretrain", **kwargs):
+    def __init__(self, generator, data_size, n_classes=3, embedding_size=120, shared_embedding_size=128, cond_embedding_size=20, embedding_init="zero", conditional_init="pretrain", **kwargs):
         '''
         generator: pretrained generator
         data_size: number of training images, tac gia de nghi nen duoi 100
@@ -49,9 +49,9 @@ class TransferBigGAN(pl.LightningModule):
         # torch.nn.init.kaiming_normal_(self.class_embeddings.weight)
         # init weight từ shared embedding của gen
         if conditional_init == 'pretrain':
-            cat = torch.LongTensor([281,285,282,287,284])
-            dog = torch.LongTensor([852, 227, 248, 273, 264])
-            lion = torch.LongTensor([292, 282, 290, 287, 340])
+            cat = torch.LongTensor([281, 285, 282])
+            dog = torch.LongTensor([227, 248, 273])
+            lion = torch.LongTensor([292, 282, 291])
 
             cat_embeds = self.generator.shared.weight.index_select(0, cat)
             dog_embeds = self.generator.shared.weight.index_select(0, dog)
@@ -308,6 +308,10 @@ class TransferBigGAN(pl.LightningModule):
             grid = torchvision.utils.make_grid(image_tensors, normalize=True)
             self.logger.experiment.add_image(
                 "reconstruct", grid, self.global_step)
+
+    def bs_reg(self):
+        bn1s = [self.generator.block[i]
+                [0].bn1 for i in range(len(self.generator.block))]
 
 
 if __name__ == '__main__':
