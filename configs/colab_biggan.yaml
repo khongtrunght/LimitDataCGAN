@@ -7,7 +7,7 @@ model_params:
     embed : 0.05 #lr cho z (index embed)
     scale_shift: 0.0005 # lr cho scale and shift sau lop linear cua gen
     class_conditional_embed: 0.001 #lr cho class embed
-    step : 3000 # giam learning rate sau moi <step> iter
+    step : 10000 # giam learning rate sau moi <step> iter
     step_factor: 0.2
 #loss
   loss:
