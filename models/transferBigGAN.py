@@ -53,6 +53,10 @@ class TransferBigGAN(pl.LightningModule):
             dog = torch.LongTensor([227, 248, 273])
             lion = torch.LongTensor([292, 282, 291])
 
+            #cat = torch.LongTensor([283, 281, 282])
+            # dog = torch.LongTensor([198, 253, 232])
+            # lion = torch.LongTensor([292, 282, 291])
+
             cat_embeds = self.generator.shared.weight.index_select(0, cat)
             dog_embeds = self.generator.shared.weight.index_select(0, dog)
             lion_embeds = self.generator.shared.weight.index_select(0, lion)
