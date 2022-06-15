@@ -1,0 +1,52 @@
+model_params:
+  name: 'TransferBigGAN'
+#learning rate
+  lr:
+    linear_gen: 0.0000001   #cho lop linear cua generator goc
+    linear_batch_stat: 0.0005  #lr cho he so shift va scale trong batchnorm cua gen
+    embed : 0.05 #lr cho z (index embed)
+    scale_shift: 0.0005 # lr cho scale and shift sau lop linear cua gen
+    class_conditional_embed: 0.001 #lr cho class embed
+    step : 5000 # giam learning rate sau moi <step> iter
+    step_factor: 0.2
+#loss
+  loss:
+    perceptural: 0.001
+    earth_mover: 0.1
+    regulization: 0.02
+    norm_img : True
+    norm_perceptural: True
+    dis_perceptural: "l1"   # perceptual dung l1 hay l2
+    
+
+  iteration:
+    num_iter: 120000
+    num_workers: 4
+  
+  n_classes : 3
+  log_freq: 100   
+  embedding_init: 'zero'
+  conditional_init: 'pretrain'
+
+
+
+data_model_params:
+  batch_size: 25
+  img_size: 128
+  data_size: 360  # la mot so chia het cho 3, se chia deu cho 3 class 
+
+
+trainer_params:
+  gpus: 1
+  max_epochs: 4000
+  log_every_n_steps: 50
+  # fast_dev_run : True
+  # check_val_every_n_epoch : 50
+  reload_dataloaders_every_epoch : False
+
+
+logging_params:
+  save_dir: "eval/log/"
+  name: 'TransferBigGAN'
+  manual_seed: 1265
+  ckpt_freq: 100 # sau 100 epoch

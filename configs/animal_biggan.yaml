@@ -7,38 +7,44 @@ model_params:
     embed : 0.05
     scale_shift: 0.0005
     class_conditional_embed: 0.001
-#loss
-  loss:
-    perceptural: 0.1
-    earth_mover: 0.1
-    regulization: 0.02
-    norm_img : True
-    norm_perceptural: True
-    dis_perceptural: "l2"
-
-  decay:
     step : 3000 # giam learning rate sau moi <step> iter
     step_factor: 0.1
+#loss
+  loss:
+    perceptural: 0.001
+    earth_mover: 0.1
+    regulization: 0.02
+    norm_img : False
+    norm_perceptural: False
+    dis_perceptural: "l2"
+    
 
   iteration:
     num_iter: 10000
     num_workers: 4
+  
+  n_classes : 3
+  log_freq: 100 #log moi 100 step
+  
 
 
 
 data_model_params:
-  name: 'animal'
   batch_size: 25
   img_size: 128
-  data_size: 100
+  data_size: 360
+
    
 
 
 
 trainer_params:
   gpus: 1
-  max_epochs: 100
-  log_every_n_steps: 20
+  max_epochs: 10000
+  log_every_n_steps: 50
+  # fast_dev_run : True
+  # check_val_every_n_epoch : 50
+  reload_dataloaders_every_epoch : False
 
 
 
@@ -47,3 +53,4 @@ logging_params:
   save_dir: "lightning_logs/"
   name: 'TransferBigGAN'
   manual_seed: 1265
+  ckpt_freq: 100 # sau 100 epoch

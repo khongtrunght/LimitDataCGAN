@@ -1,1 +1,7 @@
-data/
+data/afhq/
+lightning_logs/
+*.pyc 
+__pycache__/
+experiments/
+.idea/
+test
